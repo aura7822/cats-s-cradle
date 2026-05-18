@@ -3,13 +3,13 @@
 <table>
 <tr>
 <td align="center" width="150">
-  <img src="OIP.jpg" width="100" alt="follow me on instagram @ a.u.r.a_73">
+  <img src="OIP.jpg" width="150" alt="follow me on instagram @ a.u.r.a_73">
 </td>
 <td align="left">
   <h1 style="margin: 0;">Qats Qradle ™</h1>
   <p><em>
 
-### NeuralNetworks Simulation is now Accelerated to Man's handtips -  Addictive way to waste  your egronomics</em></p>
+NeuralNetworks Simulation is now Accelerated to Man's handtips -  Addictive way to waste  your egronomics, Cyberpunk future is now closer than you imagine</em></p>
 </td>
 </tr>
 </table>
@@ -69,23 +69,20 @@ The result is a cybernetic tapestry where human motion becomes the architect of 
 
 ---
 
-##  Technology Stack
-
-| Layer | Technologies |
-|------|------|
-| Frontend | JavaScript, HTML5 Canvas |
-| Runtime | Node.js |
-| Development | Visual Studio Code, GitHub Copilot |
-| Platform | Arch Linux, KDE Plasma |
-| Browser | Firefox |
-| AI Assistance | Claude |
-
----
 
 ##  Preview
-
+<table>
+  <tr>
+    <td>
+      <img src="demo.png" width="400" alt="follow me  on instagram @ a.u.r.a_73"
+    </td>
+      <td>
+          <img src="demo1.png" width="400" alt="follow me on instagram @ a.u.r.a_73"
+      </td>
+  </tr>
+</table>
 <div align="center">
-  <img src="copy.png" width="900" alt="Neural Hand Simulation">
+  >
 </div>
 
 ---
