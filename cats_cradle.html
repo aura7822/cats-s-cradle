@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEURAL INTERFACE — CYBORG VISION</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--c:#00fff9;--m:#ff2266;--y:#ffcc00;--g:#00ff88;--bg:#000305;--dim:rgba(0,3,5,.96)}
+html,body{width:100%;height:100%;overflow:hidden;background:#000305}
+#app{position:relative;width:100vw;height:100vh}
+#video{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+#canvas{position:absolute;top:0;left:0;width:100%;height:100%;display:block}
+/* CRT overlay */
+#crt{position:absolute;inset:0;pointer-events:none;z-index:12;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.06) 2px,rgba(0,0,0,.06) 4px);
+}
+#vignette{position:absolute;inset:0;pointer-events:none;z-index:13;
+  background:radial-gradient(ellipse 90% 90% at 50% 50%,transparent 55%,rgba(0,0,0,.92) 100%);
+}
+/* HUD */
+#hud{position:absolute;inset:0;pointer-events:none;z-index:20;font-family:'Orbitron',monospace}
+.hc{position:absolute;font-size:8.5px;letter-spacing:.18em;line-height:1.9;opacity:.82}
+.hc span{display:block}
+#htl{top:18px;left:20px;color:var(--c);text-shadow:0 0 10px var(--c)}
+#htr{top:18px;right:20px;text-align:right;color:var(--m);text-shadow:0 0 10px var(--m)}
+#hbl{bottom:18px;left:20px;color:var(--g);text-shadow:0 0 10px var(--g)}
+#hbr{bottom:18px;right:20px;text-align:right;color:var(--y);text-shadow:0 0 10px var(--y)}
+/* Corner brackets */
+.bk{position:absolute;width:26px;height:26px;border-style:solid;border-color:rgba(0,255,249,.5)}
+.tl{top:8px;left:8px;border-width:2px 0 0 2px}
+.tr{top:8px;right:8px;border-width:2px 2px 0 0}
+.bl{bottom:8px;left:8px;border-width:0 0 2px 2px}
+.br{bottom:8px;right:8px;border-width:0 2px 2px 0}
+
+/* ── MODE SELECT SCREEN ─────────────────────────────────────────────── */
+#mode-screen{
+  position:absolute;inset:0;z-index:50;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:#000305;
+  transition:opacity .8s;
+}
+#mode-screen h1{
+  font-family:'Orbitron',monospace;font-weight:900;
+  font-size:clamp(1.4rem,5vw,3.8rem);letter-spacing:.35em;
+  background:linear-gradient(135deg,#00fff9,#ff2266,#ffcc00);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  filter:drop-shadow(0 0 30px #00fff9);
+  margin-bottom:4px;
+}
+#mode-screen p{
+  font-family:'Share Tech Mono',monospace;
+  font-size:clamp(.5rem,1.2vw,.75rem);letter-spacing:.5em;
+  color:#ff2266;margin-bottom:40px;text-shadow:0 0 12px #ff2266;
+}
+.mode-cards{display:flex;gap:20px;flex-wrap:wrap;justify-content:center;padding:0 20px}
+.mcard{
+  width:clamp(160px,22vw,240px);padding:28px 18px 22px;
+  border:1px solid rgba(0,255,249,.25);background:rgba(0,255,249,.03);
+  cursor:pointer;text-align:center;position:relative;overflow:hidden;
+  transition:all .25s;font-family:'Orbitron',monospace;
+  clip-path:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,14px 100%,0 calc(100% - 14px));
+}
+.mcard::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,transparent 40%,rgba(255,255,255,.03));
+  pointer-events:none;
+}
+.mcard:hover{transform:translateY(-4px);border-color:rgba(0,255,249,.7);background:rgba(0,255,249,.07);box-shadow:0 0 30px rgba(0,255,249,.2)}
+.mcard .icon{font-size:2.2rem;margin-bottom:14px;display:block;filter:drop-shadow(0 0 12px currentColor)}
+.mcard h2{font-size:clamp(.55rem,1.5vw,.85rem);letter-spacing:.3em;margin-bottom:10px}
+.mcard p{font-family:'Share Tech Mono',monospace;font-size:clamp(.4rem,.9vw,.6rem);letter-spacing:.12em;opacity:.6;line-height:1.6}
+.mcard .tag{position:absolute;top:10px;right:12px;font-size:6px;letter-spacing:.2em;opacity:.5}
+.m-hand{color:#00fff9;border-color:rgba(0,255,249,.3)}
+.m-hand:hover{box-shadow:0 0 30px rgba(0,255,249,.25)}
+.m-face{color:#ff2266;border-color:rgba(255,34,102,.3)}
+.m-face:hover{border-color:rgba(255,34,102,.7);background:rgba(255,34,102,.07);box-shadow:0 0 30px rgba(255,34,102,.2)}
+.m-both{color:#ffcc00;border-color:rgba(255,204,0,.3)}
+.m-both:hover{border-color:rgba(255,204,0,.7);background:rgba(255,204,0,.07);box-shadow:0 0 30px rgba(255,204,0,.2)}
+.loading-row{margin-top:36px;text-align:center;font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:.3em;color:rgba(0,255,249,.5)}
+.lbar{width:220px;height:1px;background:rgba(0,255,249,.1);margin:10px auto 0;position:relative;overflow:hidden}
+.lbar::after{content:'';position:absolute;inset:0 -100% 0 -100%;background:linear-gradient(90deg,transparent,#00fff9,transparent);animation:lsw 1.6s linear infinite}
+@keyframes lsw{0%{transform:translateX(0)}100%{transform:translateX(200%)}}
+
+/* Toast event label */
+#toast{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  font-family:'Orbitron',monospace;font-size:clamp(.6rem,2.5vw,1.1rem);
+  letter-spacing:.5em;pointer-events:none;z-index:40;
+  opacity:0;transition:opacity .2s;text-shadow:0 0 25px currentColor;
+  white-space:nowrap;
+}
+#debug{position:absolute;bottom:42px;left:50%;transform:translateX(-50%);
+  background:rgba(0,3,5,.92);border:1px solid rgba(0,255,249,.18);
+  padding:5px 14px;font-size:8px;letter-spacing:.1em;color:#00fff9;
+  z-index:45;text-align:center;display:none;max-width:94vw;font-family:'Share Tech Mono',monospace}
+</style>
+</head>
+<body>
+<div id="app">
+  <video id="video" playsinline autoplay muted></video>
+  <canvas id="canvas"></canvas>
+  <div id="crt"></div>
+  <div id="vignette"></div>
+
+  <!-- HUD -->
+  <div id="hud">
+    <div class="bk tl"></div><div class="bk tr"></div>
+    <div class="bk bl"></div><div class="bk br"></div>
+    <div class="hc" id="htl">
+      <span>NEURAL INTERFACE</span>
+      <span style="font-size:7px;opacity:.6">CYBORG VISION v4.0</span>
+    </div>
+    <div class="hc" id="htr">
+      <span>MODE: <b id="hmode">--</b></span>
+      <span id="hfps" style="font-size:7px;opacity:.7">-- FPS</span>
+    </div>
+    <div class="hc" id="hbl">
+      <span id="htrack">AWAITING INPUT</span>
+      <span style="font-size:7px;opacity:.6">MEDIAPIPE NEURAL ENGINE</span>
+    </div>
+    <div class="hc" id="hbr">
+      <span>EVT: <b id="hevt">IDLE</b></span>
+      <span id="hbeams" style="font-size:7px;opacity:.7">STRINGS: 0</span>
+    </div>
+  </div>
+
+  <!-- Mode selector -->
+  <div id="mode-screen">
+    <h1>CYBORG VISION</h1>
+    <p>SELECT TRACKING MODE</p>
+    <div class="mode-cards">
+      <div class="mcard m-hand" onclick="selectMode('HANDS')">
+        <span class="icon" style="color:#00fff9">✋</span>
+        <h2>HAND MODE</h2>
+        <p>Cat's cradle laser strings · Gesture effects · Fingertip tracking</p>
+        <span class="tag">SYS-01</span>
+      </div>
+      <div class="mcard m-face" onclick="selectMode('FACE')">
+        <span class="icon" style="color:#ff2266">💀</span>
+        <h2>FACE MODE</h2>
+        <p>468-point cyborg mesh · Thermal scan · Neural face mapping</p>
+        <span class="tag">SYS-02</span>
+      </div>
+      <div class="mcard m-both" onclick="selectMode('BOTH')">
+        <span class="icon" style="color:#ffcc00">⚡</span>
+        <h2>SIMULTANEOUS</h2>
+        <p>Full body neural overlay · Hands + Face active concurrently</p>
+        <span class="tag">SYS-03</span>
+      </div>
+    </div>
+    <div class="loading-row" id="load-status">▶ LOADING NEURAL MODELS...</div>
+    <div class="lbar"></div>
+  </div>
+
+  <div id="toast"></div>
+  <div id="debug"></div>
+</div>
+
+<script>
+'use strict';
+// ── Refs ───────────────────────────────────────────────────────────────────────
+const video      = document.getElementById('video');
+const canvas     = document.getElementById('canvas');
+const ctx        = canvas.getContext('2d', {alpha:false, desynchronized:true});
+const modeScreen = document.getElementById('mode-screen');
+const loadStatus = document.getElementById('load-status');
+const hmode      = document.getElementById('hmode');
+const hfps       = document.getElementById('hfps');
+const htrack     = document.getElementById('htrack');
+const hevt       = document.getElementById('hevt');
+const hbeams     = document.getElementById('hbeams');
+const toastEl    = document.getElementById('toast');
+const debugEl    = document.getElementById('debug');
+
+// ── Palette ────────────────────────────────────────────────────────────────────
+const CY='#00fff9', MG='#ff2266', YL='#ffcc00', GR='#00ff88', WH='#ffffff';
+const HAND_TIPS = [4,8,12,16,20];
+const HAND_CONN = [
+  [0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],
+  [5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],
+  [13,17],[17,18],[18,19],[19,20],[0,17]
+];
+
+// Face mesh connections – full 468-landmark subset covering all major regions
+// We use a curated set for performance (still ~220 edges)
+const FACE_CONN = buildFaceConn();
+function buildFaceConn(){
+  // Silhouette + facial features – comprehensive MediaPipe face mesh edges
+  return [
+    // Face oval
+    [10,338],[338,297],[297,332],[332,284],[284,251],[251,389],[389,356],[356,454],[454,323],
+    [323,361],[361,288],[288,397],[397,365],[365,379],[379,378],[378,400],[400,377],[377,152],
+    [152,148],[148,176],[176,149],[149,150],[150,136],[136,172],[172,58],[58,132],[132,93],
+    [93,234],[234,127],[127,162],[162,21],[21,54],[54,103],[103,67],[67,109],[109,10],
+    // Left eye
+    [33,7],[7,163],[163,144],[144,145],[145,153],[153,154],[154,155],[155,133],
+    [33,246],[246,161],[161,160],[160,159],[159,158],[158,157],[157,173],[173,133],
+    // Left eyebrow
+    [46,53],[53,52],[52,65],[65,55],[70,63],[63,105],[105,66],[66,107],
+    // Right eye
+    [362,382],[382,381],[381,380],[380,374],[374,373],[373,390],[390,249],[249,263],
+    [362,398],[398,384],[384,385],[385,386],[386,387],[387,388],[388,466],[466,263],
+    // Right eyebrow
+    [276,283],[283,282],[282,295],[295,285],[300,293],[293,334],[334,296],[296,336],
+    // Nose bridge
+    [168,6],[6,197],[197,195],[195,5],[5,4],[4,1],[1,19],[19,94],[94,2],
+    [98,97],[97,2],[2,326],[326,327],[327,294],[294,278],
+    // Nose tip & wings
+    [218,219],[219,220],[220,237],[237,44],[44,1],[1,274],[274,457],[457,440],[440,438],
+    // Lips outer
+    [61,185],[185,40],[40,39],[39,37],[37,0],[0,267],[267,269],[269,270],[270,409],[409,291],
+    [61,146],[146,91],[91,181],[181,84],[84,17],[17,314],[314,405],[405,321],[321,375],[375,291],
+    // Lips inner
+    [78,191],[191,80],[80,81],[81,82],[82,13],[13,312],[312,311],[311,310],[310,415],[415,308],
+    [78,95],[95,88],[88,178],[178,87],[87,14],[14,317],[317,402],[402,318],[318,324],[324,308],
+    // Left cheek
+    [116,123],[123,147],[147,213],[213,192],[192,214],[214,210],[210,211],[211,32],
+    // Right cheek
+    [345,352],[352,376],[376,433],[433,416],[416,434],[434,430],[430,431],[431,262],
+    // Forehead lines
+    [10,151],[151,9],[9,8],[8,168],
+    [70,71],[71,139],[139,156],[156,143],[143,35],[35,31],[31,228],[228,229],[229,230],
+    [300,301],[301,368],[368,383],[383,372],[372,265],[265,261],[261,448],[448,449],[449,450],
+    // Under-eye / cheekbone
+    [119,118],[118,117],[117,111],[111,116],[143,142],[142,141],[141,140],[140,139],
+    [372,371],[371,370],[370,369],[369,368],
+    // Chin detail
+    [194,201],[201,200],[200,18],[18,431],[152,377],[377,396],[396,369]
+  ];
+}
+
+// Key face landmarks to draw as glowing nodes
+const FACE_NODES = [
+  // Eyes
+  33,133,362,263,159,386,145,374,
+  // Pupils (approx)
+  468,469,470,471,472,473,474,475,
+  // Brows
+  70,300,107,336,
+  // Nose
+  1,4,5,168,195,
+  // Lips
+  0,13,17,61,291,78,308,
+  // Jaw + contour
+  152,234,454,10,127,356,21,251
+];
+
+// ── Globals ────────────────────────────────────────────────────────────────────
+let W=0,H=0,DIAG=0;
+let appMode=''; // 'HANDS'|'FACE'|'BOTH'
+let modelsReady=false;
+let handsModel=null, faceModel=null;
+let lastHR=null, lastFR=null;
+
+// Performance
+let frames=0, lastFpsT=performance.now(), fps=60;
+let frameN=0; // global frame counter for throttling
+
+// Gesture state
+let prevDist=0, prevDistT=0;
+let touchCD=0, vortexCD=0, lightCD=0, toastCD=0;
+
+// Effect pools
+const rings=[], vortexP=[], bolts=[], sparks=[];
+
+// Scan line state (face)
+let scanY=0;
+
+// ── Resize ─────────────────────────────────────────────────────────────────────
+function resize(){
+  W=canvas.width=window.innerWidth;
+  H=canvas.height=window.innerHeight;
+  DIAG=Math.hypot(W,H);
+}
+resize(); window.addEventListener('resize',resize);
+
+// ── Utilities ──────────────────────────────────────────────────────────────────
+const sc = lm => ({x:(1-lm.x)*W, y:lm.y*H});
+const d2 = (a,b) => Math.hypot(a.x-b.x, a.y-b.y);
+
+function lerpc(h1,h2,t){
+  const p=h=>{h=h.replace('#','');return[parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)]};
+  const [r1,g1,b1]=p(h1),[r2,g2,b2]=p(h2);
+  return `rgb(${~~(r1+(r2-r1)*t)},${~~(g1+(g2-g1)*t)},${~~(b1+(b2-b1)*t)})`;
+}
+
+function dbg(m){debugEl.style.display='block';debugEl.textContent=m}
+
+let toastTimer=null;
+function toast(msg,col){
+  toastEl.textContent=msg;
+  toastEl.style.color=col||CY;
+  toastEl.style.opacity='1';
+  hevt.textContent=msg;
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>{toastEl.style.opacity='0';hevt.textContent='IDLE'},1600);
+}
+
+// ── Load script ────────────────────────────────────────────────────────────────
+function loadScript(src){
+  return new Promise((res,rej)=>{
+    if(document.querySelector(`script[src="${src}"]`)){res();return}
+    const s=document.createElement('script');
+    s.src=src;s.crossOrigin='anonymous';s.onload=res;s.onerror=rej;
+    document.head.appendChild(s);
+  });
+}
+
+// ── Mode selector callback ─────────────────────────────────────────────────────
+window.selectMode = async function(m){
+  if(!modelsReady){return} // wait for models
+  appMode=m;
+  hmode.textContent=m;
+  modeScreen.style.opacity='0';
+  setTimeout(()=>modeScreen.style.display='none',800);
+  startPump();
+};
+
+// ── Boot sequence ──────────────────────────────────────────────────────────────
+async function boot(){
+  loadStatus.textContent='▶ LOADING HANDS ENGINE...';
+  const HVER='0.4.1646424915', FVER='0.4.1633559619';
+
+  for(const u of[
+    `https://cdn.jsdelivr.net/npm/@mediapipe/hands@${HVER}/hands.js`,
+    `https://unpkg.com/@mediapipe/hands@${HVER}/hands.js`
+  ]){try{await loadScript(u);dbg('hands ✓');break}catch(e){}}
+
+  loadStatus.textContent='▶ LOADING FACE MESH ENGINE...';
+  for(const u of[
+    `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@${FVER}/face_mesh.js`,
+    `https://unpkg.com/@mediapipe/face_mesh@${FVER}/face_mesh.js`
+  ]){try{await loadScript(u);dbg('face ✓');break}catch(e){}}
+
+  loadStatus.textContent='▶ INITIALIZING CAMERA...';
+  let stream;
+  try{
+    stream=await navigator.mediaDevices.getUserMedia({
+      video:{width:{ideal:1280},height:{ideal:720},facingMode:'user'}
+    });
+  }catch(e){loadStatus.textContent='✕ CAMERA DENIED — allow access & reload';dbg('cam:'+e.message);return}
+  video.srcObject=stream;
+  await video.play();
+  dbg(`cam ${video.videoWidth}x${video.videoHeight}`);
+
+  // Init hands
+  if(window.Hands){
+    handsModel=new window.Hands({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands@${HVER}/`+f});
+    handsModel.setOptions({maxNumHands:2,modelComplexity:1,minDetectionConfidence:.65,minTrackingConfidence:.55});
+    handsModel.onResults(r=>{lastHR=r});
+    // Warm up
+    try{await handsModel.send({image:video})}catch(e){}
+  }
+
+  // Init face
+  if(window.FaceMesh){
+    faceModel=new window.FaceMesh({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@${FVER}/`+f});
+    faceModel.setOptions({maxNumFaces:1,refineLandmarks:true,minDetectionConfidence:.6,minTrackingConfidence:.5});
+    faceModel.onResults(r=>{lastFR=r});
+    try{await faceModel.send({image:video})}catch(e){}
+  }
+
+  modelsReady=true;
+  loadStatus.textContent='▶ SELECT MODE TO BEGIN';
+  dbg('models ready — select mode');
+
+  // Start ambient render loop immediately
+  renderLoop();
+}
+
+// ── Frame pump ────────────────────────────────────────────────────────────────
+let pumpRunning=false;
+function startPump(){
+  if(pumpRunning) return;
+  pumpRunning=true;
+  let faceSkip=0;
+  async function pump(){
+    if(video.readyState>=2){
+      const needHands=(appMode==='HANDS'||appMode==='BOTH');
+      const needFace=(appMode==='FACE'||appMode==='BOTH');
+      try{if(needHands&&handsModel) await handsModel.send({image:video})}catch(e){}
+      // Face is heavier — run every 2nd frame
+      if(needFace&&faceModel&&faceSkip++%2===0){
+        try{await faceModel.send({image:video})}catch(e){}
+      }
+    }
+    requestAnimationFrame(pump);
+  }
+  pump();
+}
+
+// ════════════════════════════════════════════════════════
+// EFFECTS
+// ════════════════════════════════════════════════════════
+
+// ── Expanding ring ────────────────────────────────────────────────────────────
+function spawnRings(x,y,col,n=3){
+  for(let i=0;i<n;i++) rings.push({x,y,r:6+i*10,maxR:100+i*20,col,spd:4+i*1.5,life:1});
+}
+function drawRings(){
+  for(let i=rings.length-1;i>=0;i--){
+    const r=rings[i];
+    r.r+=r.spd;
+    r.life=Math.max(0,1-r.r/r.maxR);
+    if(r.life<=0){rings.splice(i,1);continue}
+    ctx.save();
+    ctx.globalAlpha=r.life*.75;
+    ctx.shadowBlur=16;ctx.shadowColor=r.col;
+    ctx.strokeStyle=r.col;ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.arc(r.x,r.y,r.r,0,Math.PI*2);ctx.stroke();
+    // Inner bright thin ring
+    ctx.globalAlpha=r.life*.35;ctx.lineWidth=.7;
+    ctx.beginPath();ctx.arc(r.x,r.y,r.r*.7,0,Math.PI*2);ctx.stroke();
+    ctx.restore();
+  }
+}
+
+// ── Vortex ────────────────────────────────────────────────────────────────────
+function spawnVortex(cx,cy){
+  const cls=[CY,MG,YL,GR];
+  for(let i=0;i<100;i++){
+    const ang=Math.random()*Math.PI*2, rad=30+Math.random()*80;
+    vortexP.push({cx,cy,ang,rad,dAng:.06+Math.random()*.12*(Math.random()<.5?1:-1),
+      dr:-.6-Math.random()*1.5,life:1,decay:.01+Math.random()*.012,
+      sz:1+Math.random()*2.5,col:cls[~~(Math.random()*cls.length)]});
+  }
+}
+function drawVortex(){
+  for(let i=vortexP.length-1;i>=0;i--){
+    const p=vortexP[i];
+    p.ang+=p.dAng;p.rad+=p.dr;p.life-=p.decay;
+    if(p.life<=0||p.rad<1){vortexP.splice(i,1);continue}
+    const x=p.cx+Math.cos(p.ang)*p.rad, y=p.cy+Math.sin(p.ang)*p.rad;
+    ctx.save();ctx.globalAlpha=p.life;
+    ctx.shadowBlur=8;ctx.shadowColor=p.col;ctx.fillStyle=p.col;
+    ctx.beginPath();ctx.arc(x,y,p.sz*p.life,0,Math.PI*2);ctx.fill();
+    ctx.restore();
+  }
+}
+
+// ── Lightning ─────────────────────────────────────────────────────────────────
+function bolt(x1,y1,x2,y2,depth=0){
+  if(depth>3) return;
+  const segs=5+~~(Math.random()*5);
+  const pts=[[x1,y1]];
+  for(let i=1;i<segs;i++){
+    const t=i/segs;
+    const bx=x1+(x2-x1)*t, by=y1+(y2-y1)*t;
+    const perp=Math.atan2(y2-y1,x2-x1)+Math.PI/2;
+    const off=(Math.random()-.5)*55*(1-depth*.25);
+    pts.push([bx+Math.cos(perp)*off,by+Math.sin(perp)*off]);
+  }
+  pts.push([x2,y2]);
+  bolts.push({pts,life:1,decay:.055+Math.random()*.04,w:1.8-depth*.4,col:depth===0?CY:WH});
+  // Sparks at tip
+  for(let i=0;i<6;i++){
+    const a=Math.random()*Math.PI*2,s=3+Math.random()*7;
+    sparks.push({x:x2,y:y2,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:1,decay:.05+Math.random()*.04,r:1+Math.random()*2,col:YL});
+  }
+  if(depth<2&&Math.random()<.55){
+    const idx=1+~~(Math.random()*(pts.length-2));
+    bolt(pts[idx][0],pts[idx][1],x2+(Math.random()-.5)*90,y2+(Math.random()-.5)*90,depth+1);
+  }
+}
+function spawnLightning(cx,cy){
+  for(let i=0;i<7;i++){
+    const a=Math.random()*Math.PI*2, r=100+Math.random()*150;
+    bolt(cx,cy,cx+Math.cos(a)*r,cy+Math.sin(a)*r);
+  }
+  spawnRings(cx,cy,YL,2);spawnRings(cx,cy,WH,1);
+}
+function drawLightning(){
+  for(let i=bolts.length-1;i>=0;i--){
+    const b=bolts[i];b.life-=b.decay;
+    if(b.life<=0){bolts.splice(i,1);continue}
+    ctx.save();ctx.globalAlpha=b.life;
+    ctx.shadowBlur=14;ctx.shadowColor=b.col;
+    ctx.strokeStyle=b.col;ctx.lineWidth=b.w;ctx.lineCap='round';
+    ctx.beginPath();ctx.moveTo(b.pts[0][0],b.pts[0][1]);
+    for(let k=1;k<b.pts.length;k++) ctx.lineTo(b.pts[k][0],b.pts[k][1]);
+    ctx.stroke();
+    ctx.restore();
+  }
+  for(let i=sparks.length-1;i>=0;i--){
+    const s=sparks[i];
+    s.x+=s.vx;s.y+=s.vy;s.vx*=.88;s.vy*=.88;s.life-=s.decay;
+    if(s.life<=0){sparks.splice(i,1);continue}
+    ctx.save();ctx.globalAlpha=s.life;ctx.shadowBlur=8;ctx.shadowColor=s.col;ctx.fillStyle=s.col;
+    ctx.beginPath();ctx.arc(s.x,s.y,s.r*s.life,0,Math.PI*2);ctx.fill();ctx.restore();
+  }
+}
+
+// ════════════════════════════════════════════════════════
+// DRAW PRIMITIVES
+// ════════════════════════════════════════════════════════
+
+function glowDot(x,y,r,col,a=1){
+  ctx.save();ctx.globalAlpha=a;
+  ctx.shadowBlur=20;ctx.shadowColor=col;ctx.fillStyle=col;
+  ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+  ctx.shadowBlur=0;ctx.fillStyle='rgba(255,255,255,.85)';
+  ctx.beginPath();ctx.arc(x,y,r*.32,0,Math.PI*2);ctx.fill();
+  ctx.restore();
+}
+
+function laserLine(p1,p2,c1,c2,thick,t){
+  const d=d2(p1,p2);
+  const now=Date.now();
+  const mx=(p1.x+p2.x)/2+Math.sin(now*.0008)*d*.03;
+  const my=(p1.y+p2.y)/2+d*.055*t;
+  const g=ctx.createLinearGradient(p1.x,p1.y,p2.x,p2.y);
+  g.addColorStop(0,c1);g.addColorStop(1,c2);
+  ctx.save();
+  ctx.shadowBlur=20;ctx.shadowColor=c1;
+  ctx.strokeStyle=g;ctx.lineWidth=thick;ctx.lineCap='round';ctx.globalAlpha=.65-t*.18;
+  ctx.beginPath();ctx.moveTo(p1.x,p1.y);ctx.quadraticCurveTo(mx,my,p2.x,p2.y);ctx.stroke();
+  // bright core
+  ctx.shadowBlur=4;ctx.shadowColor=WH;ctx.strokeStyle='rgba(255,255,255,.38)';ctx.lineWidth=thick*.2;ctx.globalAlpha=.9;
+  ctx.beginPath();ctx.moveTo(p1.x,p1.y);ctx.quadraticCurveTo(mx,my,p2.x,p2.y);ctx.stroke();
+  ctx.restore();
+}
+
+// ════════════════════════════════════════════════════════
+// HAND RENDERING
+// ════════════════════════════════════════════════════════
+function drawHands(mhl,mhd){
+  let leftH=null,rightH=null;
+  for(let i=0;i<mhl.length;i++){
+    if(mhd[i]?.label==='Right') leftH=mhl[i]; else rightH=mhl[i];
+  }
+
+  // Skeleton
+  for(let i=0;i<mhl.length;i++){
+    const lms=mhl[i], isR=mhd[i]?.label==='Left';
+    const sc_col=isR?'rgba(255,34,102,.18)':'rgba(0,255,249,.18)';
+    ctx.save();ctx.strokeStyle=sc_col;ctx.lineWidth=2;ctx.shadowBlur=8;ctx.shadowColor=isR?MG:CY;
+    for(const [a,b] of HAND_CONN){
+      const p1=sc(lms[a]),p2=sc(lms[b]);
+      ctx.beginPath();ctx.moveTo(p1.x,p1.y);ctx.lineTo(p2.x,p2.y);ctx.stroke();
+    }
+    ctx.restore();
+    // Nodes
+    const base=isR?MG:CY;
+    const now=Date.now();
+    for(let j=0;j<lms.length;j++){
+      const p=sc(lms[j]);const tip=HAND_TIPS.includes(j);
+      const col=tip?(isR?MG:YL):base;
+      glowDot(p.x,p.y,tip?5:2.8,col,tip?1:.65);
+      if(tip){
+        const pulse=(Math.sin(now*.007+j)+1)*.5;
+        ctx.save();ctx.globalAlpha=.28*pulse;ctx.strokeStyle=col;
+        ctx.shadowBlur=10;ctx.shadowColor=col;ctx.lineWidth=1.2;
+        ctx.beginPath();ctx.arc(p.x,p.y,9+pulse*6,0,Math.PI*2);ctx.stroke();ctx.restore();
+      }
+    }
+  }
+
+  // Cat's cradle strings
+  let beams=0;
+  if(leftH&&rightH){
+    const lT=HAND_TIPS.map(i=>sc(leftH[i]));
+    const rT=HAND_TIPS.map(i=>sc(rightH[i]));
+    for(let li=0;li<lT.length;li++) for(let ri=0;ri<rT.length;ri++){
+      const lt=lT[li],rt=rT[ri];
+      const dd=d2(lt,rt),t=Math.min(dd/DIAG,1);
+      let c1,c2;
+      if(t<.5){c1=lerpc(CY,MG,t*2);c2=lerpc(MG,CY,t*2)}
+      else{c1=lerpc(MG,YL,(t-.5)*2);c2=lerpc(YL,MG,(t-.5)*2)}
+      laserLine(lt,rt,c1,c2,Math.max(.5,2.8-t*2.2),t);
+      beams++;
+    }
+    hbeams.textContent='STRINGS: '+beams;
+    processGestures(leftH,rightH,lT,rT);
+  } else hbeams.textContent='STRINGS: 0';
+
+  htrack.textContent='HANDS: '+mhl.length;
+}
+
+// ── Gesture detection ──────────────────────────────────────────────────────────
+function processGestures(leftH,rightH,lT,rT){
+  // Touch → rings
+  if(touchCD>0) touchCD--;
+  else for(const lt of lT) for(const rt of rT){
+    if(d2(lt,rt)<26){
+      const cx=(lt.x+rt.x)/2,cy=(lt.y+rt.y)/2;
+      spawnRings(cx,cy,CY,4);spawnRings(cx,cy,MG,2);
+      for(let i=0;i<15;i++){
+        const a=Math.random()*Math.PI*2,s=2+Math.random()*6;
+        sparks.push({x:cx,y:cy,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:1,decay:.05+Math.random()*.04,r:1+Math.random()*2,col:[CY,MG,YL][~~(Math.random()*3)]});
+      }
+      toast('TOUCH RING',CY);touchCD=22;
+    }
+  }
+  // Cross → vortex
+  const lW=sc(leftH[0]),rW=sc(rightH[0]);
+  if(lW.x>rW.x&&vortexCD===0){
+    const lM=sc(leftH[9]),rM=sc(rightH[9]);
+    spawnVortex((lM.x+rM.x)/2,(lM.y+rM.y)/2);
+    toast('VORTEX',MG);vortexCD=50;
+  }
+  if(vortexCD>0) vortexCD--;
+  // Rapid separation → lightning
+  const now=performance.now(), hd=d2(lW,rW);
+  if(prevDistT>0){
+    const vel=(hd-prevDist)/(now-prevDistT);
+    if(vel>0.5&&lightCD===0){
+      const cx=(lW.x+rW.x)/2,cy=(lW.y+rW.y)/2;
+      spawnLightning(cx,cy);
+      bolt(lW.x,lW.y,lW.x-(80+Math.random()*80),lW.y+(Math.random()-.5)*60);
+      bolt(rW.x,rW.y,rW.x+(80+Math.random()*80),rW.y+(Math.random()-.5)*60);
+      toast('LIGHTNING BURST',YL);lightCD=32;
+    }
+  }
+  prevDist=hd;prevDistT=now;
+  if(lightCD>0) lightCD--;
+}
+
+// ════════════════════════════════════════════════════════
+// FACE RENDERING — full cyberpunk cyborg terminator style
+// ════════════════════════════════════════════════════════
+// Cached face color (cycles slowly)
+let faceHue=180;
+
+function drawFace(lms){
+  const now=Date.now();
+  faceHue=(faceHue+.015)%360;
+
+  // ── Pre-compute projected points once ───────────────────────────────────────
+  // Only compute if lms has enough points
+  const pts=new Array(lms.length);
+  for(let i=0;i<lms.length;i++) pts[i]=sc(lms[i]);
+
+  // Face bounding box
+  let minX=W,maxX=0,minY=H,maxY=0;
+  for(let i=0;i<pts.length;i++){
+    if(pts[i].x<minX) minX=pts[i].x;
+    if(pts[i].x>maxX) maxX=pts[i].x;
+    if(pts[i].y<minY) minY=pts[i].y;
+    if(pts[i].y>maxY) maxY=pts[i].y;
+  }
+  const fcx=(minX+maxX)/2, fcy=(minY+maxY)/2;
+  const fW=maxX-minX, fH=maxY-minY;
+
+  // ── Depth-sorted edges with color cycling ────────────────────────────────────
+  // Map depth (z) of each lm to a color band
+  // 3 color channels cycling: cyan=primary, magenta=mid, yellow=deep
+  ctx.save();
+  ctx.lineWidth=.9;ctx.lineCap='round';
+
+  for(const [a,b] of FACE_CONN){
+    if(!lms[a]||!lms[b]) continue;
+    const pa=pts[a],pb=pts[b];
+    // Use z-coordinate for depth tinting
+    const za=lms[a].z||0, zb=lms[b].z||0;
+    const zAvg=(za+zb)/2;
+    // z is typically -0.1 (close) to 0.1 (far). Normalize
+    const depth=Math.min(1,Math.max(0,(zAvg+0.12)*5));
+    const hShift=(faceHue+depth*120)%360;
+    const alpha=.55-depth*.25;
+    const lineW=1-depth*.4;
+    ctx.globalAlpha=alpha;
+    ctx.shadowBlur=depth<.3?8:3;
+    ctx.shadowColor=`hsl(${hShift},100%,60%)`;
+    ctx.strokeStyle=`hsl(${hShift},100%,${65-depth*20}%)`;
+    ctx.lineWidth=lineW;
+    ctx.beginPath();ctx.moveTo(pa.x,pa.y);ctx.lineTo(pb.x,pb.y);ctx.stroke();
+  }
+  ctx.restore();
+
+  // ── Key node glowing dots ────────────────────────────────────────────────────
+  for(const idx of FACE_NODES){
+    if(!pts[idx]) continue;
+    const p=pts[idx];
+    const pulse=(Math.sin(now*.004+idx*.25)+1)*.5;
+    const hh=(faceHue+idx*7)%360;
+    const col=`hsl(${hh},100%,70%)`;
+    glowDot(p.x,p.y,2+pulse*.8,col,.85+pulse*.1);
+  }
+
+  // ── Iris rings (if refineLandmarks=true gives irises at 468-477) ────────────
+  const irisL=468,irisR=473;
+  if(pts[irisL]&&pts[irisR]){
+    for(const iIdx of[irisL,irisR]){
+      const ip=pts[iIdx];
+      const pulse=(Math.sin(now*.005+iIdx)+1)*.5;
+      ctx.save();
+      ctx.globalAlpha=.7;ctx.strokeStyle=MG;ctx.shadowBlur=15;ctx.shadowColor=MG;ctx.lineWidth=1.2;
+      ctx.beginPath();ctx.arc(ip.x,ip.y,7+pulse*3,0,Math.PI*2);ctx.stroke();
+      ctx.globalAlpha=.4;ctx.strokeStyle=CY;ctx.lineWidth=.8;
+      ctx.beginPath();ctx.arc(ip.x,ip.y,12+pulse*2,0,Math.PI*2);ctx.stroke();
+      ctx.restore();
+      glowDot(ip.x,ip.y,2.5,MG,1);
+    }
+  }
+
+  // ── Vertical scan line (targeting laser) ────────────────────────────────────
+  scanY+=2.5;
+  if(scanY>maxY+20) scanY=minY-20;
+  if(scanY>minY&&scanY<maxY){
+    ctx.save();
+    ctx.globalAlpha=.25;
+    ctx.strokeStyle=CY;ctx.lineWidth=1;ctx.shadowBlur=10;ctx.shadowColor=CY;
+    ctx.setLineDash([5,4]);
+    ctx.beginPath();ctx.moveTo(minX,scanY);ctx.lineTo(maxX,scanY);ctx.stroke();
+    ctx.setLineDash([]);
+    // Glow at scan edge
+    const sg=ctx.createLinearGradient(minX,scanY,maxX,scanY);
+    sg.addColorStop(0,'transparent');sg.addColorStop(.5,'rgba(0,255,249,.3)');sg.addColorStop(1,'transparent');
+    ctx.fillStyle=sg;ctx.globalAlpha=.5;
+    ctx.fillRect(minX,scanY-1,fW,3);
+    ctx.restore();
+  }
+
+  // ── HUD target reticle around face ──────────────────────────────────────────
+  const pad=18;
+  ctx.save();ctx.globalAlpha=.25;ctx.strokeStyle=MG;ctx.lineWidth=1;ctx.shadowBlur=8;ctx.shadowColor=MG;
+  ctx.setLineDash([4,6]);
+  ctx.strokeRect(minX-pad,minY-pad,fW+pad*2,fH+pad*2);
+  ctx.setLineDash([]);
+  // Corner ticks
+  ctx.globalAlpha=.7;ctx.lineWidth=1.5;ctx.shadowBlur=12;
+  const tk=14;
+  for(const [cx2,cy2,sx,sy] of[
+    [minX-pad,minY-pad,1,1],[maxX+pad,minY-pad,-1,1],
+    [minX-pad,maxY+pad,1,-1],[maxX+pad,maxY+pad,-1,-1]
+  ]){
+    ctx.beginPath();ctx.moveTo(cx2,cy2);ctx.lineTo(cx2+sx*tk,cy2);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(cx2,cy2);ctx.lineTo(cx2,cy2+sy*tk);ctx.stroke();
+  }
+  ctx.restore();
+
+  // ── Face center crosshair ────────────────────────────────────────────────────
+  ctx.save();ctx.globalAlpha=.2;ctx.strokeStyle=YL;ctx.lineWidth=.8;
+  ctx.setLineDash([3,8]);
+  ctx.beginPath();ctx.moveTo(fcx-fW*.5,fcy);ctx.lineTo(fcx+fW*.5,fcy);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(fcx,fcy-fH*.5);ctx.lineTo(fcx,fcy+fH*.5);ctx.stroke();
+  ctx.setLineDash([]);ctx.restore();
+
+  // ── Data readout labels beside face ─────────────────────────────────────────
+  ctx.save();ctx.font='8px "Share Tech Mono"';ctx.fillStyle=GR;ctx.globalAlpha=.6;ctx.shadowBlur=6;ctx.shadowColor=GR;
+  const labels=[
+    ['NEURAL ID: '+~~(lms[1]?.x*9999||0),'right'],
+    ['DEPTH: '+((lms[4]?.z||0)*-100).toFixed(1)+'cm','right'],
+    ['NODES: '+FACE_NODES.length,'right'],
+    ['MESH: '+(FACE_CONN.length*2)+'E','right'],
+  ];
+  labels.forEach(([txt],i)=>{
+    ctx.fillText(txt,maxX+pad+6,minY+16+i*13);
+  });
+  ctx.restore();
+
+  htrack.textContent='FACE MESH: '+lms.length+' PTS';
+}
+
+// ════════════════════════════════════════════════════════
+// BACKGROUND
+// ════════════════════════════════════════════════════════
+// Pre-cache grid path is slower to clear, so draw manually
+// Adaptive: skip grid lines when FPS drops
+let gridAlpha=.022;
+function drawBG(){
+  ctx.fillStyle='#000305';
+  ctx.fillRect(0,0,W,H);
+  // Grid — only draw every 3rd frame if fps<40
+  if(fps>38||frameN%3===0){
+    ctx.save();ctx.strokeStyle=`rgba(0,255,249,${gridAlpha})`;ctx.lineWidth=1;
+    const g=90;
+    for(let x=0;x<W;x+=g){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke()}
+    for(let y=0;y<H;y+=g){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke()}
+    ctx.restore();
+  }
+}
+
+// ════════════════════════════════════════════════════════
+// RENDER LOOP
+// ════════════════════════════════════════════════════════
+function renderLoop(){
+  requestAnimationFrame(renderLoop);
+  frameN++;
+
+  // FPS
+  frames++;
+  const now=performance.now();
+  if(now-lastFpsT>800){
+    fps=~~(frames*1000/(now-lastFpsT));
+    hfps.textContent=fps+' FPS';
+    frames=0;lastFpsT=now;
+    // Adaptive grid opacity
+    gridAlpha=fps>50?.025:fps>35?.015:.008;
+  }
+
+  drawBG();
+
+  // Ambient when no mode selected
+  if(!appMode||!modelsReady){
+    const t=Date.now()*.001;
+    ctx.save();
+    const cls=[CY,MG,YL,GR];
+    for(let i=0;i<4;i++){
+      const x=W*(.2+.6*(i/4+Math.sin(t*.35+i)*.1));
+      const y=H*(.45+Math.sin(t*.5+i*1.3)*.1);
+      const r=55+Math.sin(t+i)*18;
+      const gr=ctx.createRadialGradient(x,y,0,x,y,r);
+      gr.addColorStop(0,cls[i]+'2a');gr.addColorStop(1,'transparent');
+      ctx.fillStyle=gr;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+    }
+    ctx.restore();
+    // Effects still animate
+    drawRings();drawVortex();drawLightning();
+    return;
+  }
+
+  const hr=lastHR, fr=lastFR;
+  const mhl=(hr?.multiHandLandmarks)||[];
+  const mhd=(hr?.multiHandedness)||[];
+  const fml=(fr?.multiFaceLandmarks)||[];
+
+  if(appMode==='HANDS'){
+    if(mhl.length) drawHands(mhl,mhd);
+    else htrack.textContent='HANDS: 0 — SHOW HANDS';
+  } else if(appMode==='FACE'){
+    if(fml.length) drawFace(fml[0]);
+    else htrack.textContent='FACE: SEARCHING...';
+    hbeams.textContent='';
+  } else if(appMode==='BOTH'){
+    if(mhl.length) drawHands(mhl,mhd);
+    else htrack.textContent='HANDS: 0';
+    if(fml.length) drawFace(fml[0]);
+  }
+
+  // Always draw effects
+  drawRings();
+  drawVortex();
+  drawLightning();
+}
+
+boot();
+</script>
+</body>
+</html>
