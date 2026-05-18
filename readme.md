@@ -49,16 +49,22 @@ copyright © 2026 Aura Joshua - All rights reserved
 </div>
 
 
-
+<div align ="center">
+  
 ##  Overview
+
+</div>
 
 **Cats Cradle™** is an interactive visual experiment that simulates neural-like structures emerging from fingertip motion. As your hand moves through space, luminous nodes and connective lines are woven into a living digital mesh, echoing the formation of synapses in an artificial cortex.
 
 The result is a cybernetic tapestry where human motion becomes the architect of a synthetic mind.
 
 ---
-
+<div align="center">
+  
 ##  Features
+
+</div>
 
 -  Finger-tracking based interaction
 -  Real-time neural network visualization
@@ -67,32 +73,147 @@ The result is a cybernetic tapestry where human motion becomes the architect of 
 -  Particle-based rendering on a dark canvas
 -  Screenshot-friendly visual output
 
+
 ---
 
-
+<div align="center">
+  
 ##  Preview
+
+</div>
+
+<div align="center">
 <table>
   <tr>
     <td>
-      <img src="demo.png" width="400" alt="follow me  on instagram @ a.u.r.a_73"
+      <img src="demo.png" width="380" height="420" alt="follow me  on instagram @ a.u.r.a_73"
     </td>
       <td>
-          <img src="demo1.png" width="400" alt="follow me on instagram @ a.u.r.a_73"
+          <img src="demo1.png" width="420" height="420" alt="follow me on instagram @ a.u.r.a_73"
       </td>
   </tr>
 </table>
-<div align="center">
-  >
+
+  
 </div>
 
 ---
+<div align="center">
+  
+## OS Launching [linux & unix systems]
 
-## 🚀 Getting Started
+</div>
 
-### Clone the Repository
+### Run as whole
 
 ```bash
-git clone git@github.com:aura7822/catcradle.git
-cd catcradle
+#bash/zshell
+git clone git@github.com:aura7822/cat-s-cradle.git
+cd cat-s-cradle
 chmod +x ./launch
 ./launch
+
+```
+### 🛈 Tip :
+The POSIX shell entry point is launch.sh. The script resolves its own directory, changes the working directory to the project root, and invokes launcher.py using the system's default python3 interpreter.
+
+<div align="center">
+  
+## OS  Launching [Windows systems]
+
+</div>
+
+```cmd
+#cmd
+launch.bat
+```
+---
+```powershell
+#powershell
+.\launch.ps1
+```
+### 🛈 Tip:
+For systems where a Python runtime is not guaranteed, a self-contained executable can be generated using PyInstaller.
+
+```cmd
+#cmd
+python build_windows_exe.py
+dist\launcher.exe
+```
+<div align="center">
+
+## SUPPORT
+
+<table>
+  <thead>
+    <tr>
+      <th>Browsers</th>
+      <th>Platforms / Distributions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <a href="#">
+          <img src="https://img.shields.io/badge/Firefox-FF7139?logo=firefoxbrowser&logoColor=white" alt="Firefox">
+        </a>
+      </td>
+      <td>
+        <a href="#">
+          <img src="https://img.shields.io/badge/Arch%20Linux-1793D1?logo=arch-linux&logoColor=white" alt="Arch Linux">
+        </a>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <a href="#">
+          <img src="https://img.shields.io/badge/Brave-FB542B?logo=brave&logoColor=white" alt="Brave">
+        </a>
+      </td>
+      <td>
+        <a href="#">
+          <img src="https://custom-icon-badges.demolab.com/badge/Windows-0078D6?logo=windows11&logoColor=white" alt="Windows">
+        </a>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <a href="#">
+          <img src="https://img.shields.io/badge/Google%20Chrome-4285F4?logo=googlechrome&logoColor=white" alt="Google Chrome">
+        </a>
+      </td>
+      <td>
+        <a href="#">
+          <img src="https://img.shields.io/badge/Debian-A81D33?logo=debian&logoColor=white" alt="Debian">
+        </a>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <a href="#">
+          <img src="https://img.shields.io/badge/Safari-006CFF?logo=safari&logoColor=white" alt="Safari">
+        </a>
+      </td>
+      <td>
+        <a href="#">
+          <img src="https://img.shields.io/badge/macOS-000000?logo=apple&logoColor=white" alt="macOS">
+        </a>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <a href="#">
+          <img src="https://custom-icon-badges.demolab.com/badge/Microsoft%20Edge-2771D8?logo=edge-white&logoColor=white" alt="Microsoft Edge">
+        </a>
+      </td>
+      <td>
+        <a href="#">
+          <img src="https://img.shields.io/badge/Fedora-51A2DA?logo=fedora&logoColor=white" alt="Fedora">
+        </a>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+</div>
+<img src="https://i.imgur.com/LyHic3i.gif" alt="Animated Divider">
