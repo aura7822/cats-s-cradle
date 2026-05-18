@@ -1,33 +1,33 @@
 
 <div align="center">
-
 <table>
-<tr>
-<td align="center" width="150">
-  <img src="OIP.jpg" width="150" alt="follow me on instagram @ a.u.r.a_73">
-</td>
-<td align="left">
-  <h1 style="margin: 0;">Qats Qradle ™</h1>
-  <p><em>
-
-NeuralNetworks Simulation is now Accelerated to Man's handtips -  Addictive way to waste  your egronomics, Cyberpunk future is now closer than you imagine</em></p>
-</td>
-</tr>
+  <tr>
+    <!-- Logo -->
+    <td align="center" width="150">
+      <img
+        src="OIP.jpg"
+        width="150"
+        alt="Follow me on Instagram @a.u.r.a_73"
+      >
+    </td>
+    <!-- Project title and description -->
+    <td align="left" valign="top">
+      <h1 style="margin: 0;">Qats Qradle ™</h1>
+      <p>
+        <em>
+          Neural Networks Simulation is now accelerated to man's fingertips.
+          An addictive way to sacrifice your ergonomics while the cyberpunk
+          future creeping closer than you imagine.[simple]
+        </em>
+      </p>
+    </td>
+  </tr>
 </table>
+  
 
-<p align="center">
-  <a href="https://github.com/aura7822/catscradle" target="_blank">
-    <img
-      src="https://img.shields.io/badge/%E2%AD%90%20Star%20the%20Repository-0D1117?style=for-the-badge&logo=github&logoColor=white&labelColor=161B22"
-      alt="Star the Repository"
-    />
-  </a><a href="https://buymeacoffee.com/aura7822" target="_blank">
-    <img
-      src="https://img.shields.io/badge/%E2%98%95%20Buy%20Me%20a%20Coffee-2D1B69?style=for-the-badge&logo=buymeacoffee&logoColor=10344&labelColor=161B22"
-      alt="Buy Me a Coffee"
-    />
-  </a>
-</p>
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Author](https://img.shields.io/badge/Author-Aura%20.P-8A2BE2)](#)
+
 <img src="https://i.imgur.com/LyHic3i.gif" alt="Animated Divider">
 
 <img src="copy.jpeg" width="600" height="220" alt="Cats Cradle Neural Simulation Preview">
@@ -45,7 +45,21 @@ NeuralNetworks Simulation is now Accelerated to Man's handtips -  Addictive way 
 
 <img src="https://i.imgur.com/LyHic3i.gif" alt="Animated Divider">
 
-copyright © 2026 Aura Joshua - All rights reserved
+
+
+<p align="center">
+  <a href="https://github.com/aura7822/catscradle" target="_blank">
+    <img
+      src="https://img.shields.io/badge/%E2%AD%90%20Star%20the%20Repository-0D1117?style=for-the-badge&logo=github&logoColor=white&labelColor=161B22"
+      alt="Star the Repository"
+    />
+  </a><a href="https://buymeacoffee.com/aura7822" target="_blank">
+    <img
+      src="https://img.shields.io/badge/%E2%98%95%20Buy%20Me%20a%20Coffee-2D1B69?style=for-the-badge&logo=buymeacoffee&logoColor=10344&labelColor=161B22"
+      alt="Buy Me a Coffee"
+    />
+  </a>
+</p>
 
 </div>
 
@@ -218,3 +232,5 @@ dist\launcher.exe
 
 </div>
 <img src="https://i.imgur.com/LyHic3i.gif" alt="Animated Divider">
+
+copyright © 2026 Aura Joshua - All rights reserved
