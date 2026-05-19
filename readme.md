@@ -28,7 +28,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Author](https://img.shields.io/badge/Author-Aura%20.P-8A2BE2)](#)
 
-<img src="https://i.imgur.com/LyHic3i.gif" alt="Animated Divider">
+<img src="https://i.imgur.com/LyHic3i.gif" alt="follow me on instagram @ a.u.r.a_73">
 
 <img src="copy.jpeg" width="600" height="220" alt="Cats Cradle Neural Simulation Preview">
 
@@ -123,8 +123,8 @@ The result is a cybernetic tapestry where human motion becomes the architect of 
 
 ```bash
 #bash/zshell
-git clone git@github.com:aura7822/cat-s-cradle.git
-cd cat-s-cradle
+git clone git@github.com:aura7822/cats-s-cradle.git
+cd cats-s-cradle
 chmod +x ./launch
 ./launch
 
