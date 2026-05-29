@@ -16,7 +16,7 @@
       <p>
         <em>
           Neural Networks Simulation is now accelerated to man's fingertips.
-          An addictive way to sacrifice your ergonomics while the cyberpunk
+          An addictive way to sacrifice your ergonomics whilst the cyberpunk
           future creeping closer than you imagine.[simple]
         </em>
       </p>
